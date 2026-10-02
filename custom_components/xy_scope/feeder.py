@@ -63,7 +63,8 @@ def state_number(state: State | None) -> float | None:
     has a condition as its state; its temperature is an attribute."""
     if state is None or state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
         return None
-    if state.domain == "weather":
+    # entity_id, not .domain: the recorder's LazyState has no .domain.
+    if state.entity_id.startswith("weather."):
         value: Any = state.attributes.get("temperature")
     else:
         value = state.state
@@ -195,8 +196,12 @@ class Feeder:
             "lat": round(self.hass.config.latitude, 3),
             "lon": round(self.hass.config.longitude, 3),
         }
-        await self._refresh_forecast(force=True)
-        await self._refresh_history()
+        # A source that fails must not stop the rest from being pushed.
+        for step in (self._refresh_forecast(force=True), self._refresh_history()):
+            try:
+                await step
+            except Exception:  # noqa: BLE001
+                LOGGER.exception("Could not read a scope input source")
         self._holding = False
         await self.resend_all()
 
@@ -239,8 +244,11 @@ class Feeder:
         self.set(IN_SUN, sun_input(event.data["new_state"]))
 
     async def _hourly(self, now: datetime) -> None:
-        await self._refresh_forecast(force=True)
-        await self._refresh_history()
+        for step in (self._refresh_forecast(force=True), self._refresh_history()):
+            try:
+                await step
+            except Exception:  # noqa: BLE001
+                LOGGER.exception("Could not read a scope input source")
 
     async def _refresh_forecast(self, force: bool = False) -> None:
         entity = self.options.get(OPT_WEATHER)

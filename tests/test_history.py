@@ -8,7 +8,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TOKEN
-from homeassistant.core import HomeAssistant, State
+from homeassistant.core import HomeAssistant
 from homeassistant.util import dt as dt_util
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
@@ -24,10 +24,11 @@ async def test_history_series_are_even_and_end_now(hass: HomeAssistant, box):
 
     def changes(hass_, start, end, entity_id, no_attributes, include_start_time_state):
         asked.append((entity_id, round((end - start) / timedelta(days=1))))
-        old = State(entity_id, "30")
-        old.last_changed = now - timedelta(days=3)
-        new = State(entity_id, "55")
-        new.last_changed = now - timedelta(hours=1)
+        # Shaped like the recorder's LazyState: no .domain.
+        old = SimpleNamespace(entity_id=entity_id, state="30", attributes={},
+                              last_changed=now - timedelta(days=3))
+        new = SimpleNamespace(entity_id=entity_id, state="55", attributes={},
+                              last_changed=now - timedelta(hours=1))
         return {entity_id: [old, new]}
 
     hass.states.async_set("sensor.ficus", "55")
@@ -50,4 +51,18 @@ async def test_history_series_are_even_and_end_now(hass: HomeAssistant, box):
     assert len(plant) == 14 * 12 and len(week) == 7 * 24
     assert plant[0] is None and plant[-1] == 55.0
     assert 30.0 in plant
+    await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_a_failing_source_does_not_stop_the_push(hass: HomeAssistant, box):
+    hass.config.components.add("recorder")
+    hass.states.async_set("sensor.inside", "21")
+    with patch("homeassistant.components.recorder.get_instance",
+               side_effect=RuntimeError("recorder broke")):
+        entry = MockConfigEntry(domain=DOMAIN, data=DATA,
+                                options={"inside_temp": "sensor.inside"})
+        entry.add_to_hass(hass)
+        assert await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done(wait_background_tasks=True)
+    assert box.pushes[0]["inside_temp"] == 21.0
     await hass.config_entries.async_unload(entry.entry_id)

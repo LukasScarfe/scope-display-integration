@@ -27,11 +27,13 @@ from .const import (
     OPT_WEATHER,
 )
 
-# Integrations whose sensors describe the weather outside.
+# Integrations whose sensors describe the weather outside. Not station
+# makers like Ecowitt or Netatmo: their indoor modules report through the
+# same integration as the outdoor ones.
 WEATHER_PLATFORMS = {
-    "accuweather", "buienradar", "ecowitt", "environment_canada", "met",
-    "met_eireann", "meteo_france", "netatmo", "nws", "openweathermap",
-    "pirateweather", "smhi", "tomorrowio", "weatherflow", "weatherkit",
+    "accuweather", "buienradar", "environment_canada", "met",
+    "met_eireann", "meteo_france", "nws", "openweathermap",
+    "pirateweather", "smhi", "tomorrowio", "weatherkit",
 }
 # WeatherEntityFeature.FORECAST_HOURLY
 FORECAST_HOURLY = 2

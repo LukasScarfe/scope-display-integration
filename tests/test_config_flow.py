@@ -80,3 +80,17 @@ async def test_reauth_takes_a_new_token(hass: HomeAssistant, box):
     assert entry.data[CONF_TOKEN] == "new"
     await hass.async_block_till_done()
     await hass.config_entries.async_unload(entry.entry_id)
+
+
+async def test_station_indoor_sensor_is_suggested_as_inside(hass: HomeAssistant, box):
+    """A weather-station maker's indoor sensor is still inside: the platform
+    alone does not make a reading outdoor."""
+    from homeassistant.helpers import entity_registry as er
+
+    reg = er.async_get(hass)
+    reg.async_get_or_create("sensor", "ecowitt", "indoor", suggested_object_id="living_room_temperature")
+    hass.states.async_set("sensor.living_room_temperature", "22",
+                          {"device_class": "temperature"})
+    result = await _start(hass)
+    result = await hass.config_entries.flow.async_configure(result["flow_id"], DATA)
+    assert result["options"]["inside_temp"] == "sensor.living_room_temperature"
