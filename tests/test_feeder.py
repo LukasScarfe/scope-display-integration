@@ -79,12 +79,24 @@ async def test_changes_are_throttled_and_coalesced(hass, entry, box):
     assert box.pushes == [{"inside_temp": 23.0}]
 
 
-async def test_unavailable_entity_clears_its_input(hass, entry, box):
+async def test_unavailable_entity_keeps_the_last_value(hass, entry, box):
     hass.states.async_set("sensor.inside", "unavailable")
     async_fire_time_changed(
         hass, dt_util.utcnow() + timedelta(seconds=THROTTLE_SECONDS + 1))
     await hass.async_block_till_done()
-    assert "inside_temp" not in box.inputs
+    assert box.inputs["inside_temp"] == 21.46
+    assert all("inside_temp" not in p for p in box.pushes[1:])
+
+
+async def test_weather_now(hass, entry, box):
+    assert box.inputs["weather_now"]["humidity"] is None
+    hass.states.async_set("weather.home", "rainy",
+                          {"temperature": 9.0, "humidity": 93, "wind_speed": 12.3})
+    async_fire_time_changed(
+        hass, dt_util.utcnow() + timedelta(seconds=THROTTLE_SECONDS + 1))
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert box.inputs["weather_now"]["humidity"] == 93
+    assert box.inputs["weather_now"]["wind_speed"] == 12.3
 
 
 async def test_restarted_box_is_refilled(hass, entry, box):
@@ -168,3 +180,18 @@ async def test_feeding_waits_for_home_assistant_to_start(hass: HomeAssistant, bo
     hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
     await hass.async_block_till_done(wait_background_tasks=True)
     assert box.pushes[0]["inside_temp"] == 20.0
+
+
+async def test_unknown_at_start_says_nothing(hass: HomeAssistant, box):
+    """A sensor still unknown when HA starts must not blank the box's value."""
+    box.inputs["inside_temp"] = 19.0
+    hass.states.async_set("sensor.inside", "unknown")
+    e = MockConfigEntry(domain=DOMAIN, data=DATA,
+                        options={"inside_temp": "sensor.inside"})
+    e.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(e.entry_id)
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert "inside_temp" not in box.pushes[0]
+    assert box.inputs["inside_temp"] == 19.0
+    # Unmapped inputs are still cleared.
+    assert box.pushes[0]["outside_temp"] is None

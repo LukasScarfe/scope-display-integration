@@ -56,6 +56,11 @@ IN_INSIDE_WEEK = "inside_week"       # last 7 d, hourly
 IN_OUTSIDE_WEEK = "outside_week"     # last 7 d, hourly
 IN_SUN = "sun"                       # rise/set/noon (local hours), elevation
 IN_LOCATION = "location"             # home lat/lon, for sky maths on the box
+IN_WEATHER_NOW = "weather_now"       # the weather entity's current readings
+
+# Current readings copied from the weather entity into `weather_now`.
+WEATHER_NOW_ATTRS = ("humidity", "wind_speed", "wind_bearing", "pressure",
+                     "cloud_coverage", "uv_index", "dew_point")
 
 FORECAST_HOURS = 24
 
@@ -72,4 +77,5 @@ HISTORY_SERIES = (
 ALL_INPUTS = (
     *NUMERIC_INPUTS, *LOCATION_INPUTS, IN_FORECAST_TEMP, IN_FORECAST_RAIN,
     *(name for name, *_ in HISTORY_SERIES), IN_SUN, IN_LOCATION,
+    IN_WEATHER_NOW,
 )

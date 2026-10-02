@@ -14,6 +14,11 @@ Some inputs are derived rather than read:
 
 Every value pushed is also kept here, so a box that restarted or was away can
 be refilled in one request.
+
+An entity that goes unavailable or unknown is *no news*, not a reading: the box
+keeps the last good value rather than blanking a screen to `--` every time
+Home Assistant restarts or a sensor misses a report. Only an input that is no
+longer mapped is cleared on the box.
 """
 
 from __future__ import annotations
@@ -46,11 +51,13 @@ from .const import (
     IN_FORECAST_TEMP,
     IN_LOCATION,
     IN_SUN,
+    IN_WEATHER_NOW,
     LOCATION_INPUTS,
     LOGGER,
     NUMERIC_INPUTS,
     OPT_WEATHER,
     THROTTLE_SECONDS,
+    WEATHER_NOW_ATTRS,
 )
 from .coordinator import ScopeCoordinator
 
@@ -110,6 +117,14 @@ def sun_input(state: State | None) -> dict[str, float | None] | None:
         "elevation": _round(a.get("elevation"), 1),
         "azimuth": _round(a.get("azimuth"), 1),
     }
+
+
+def weather_now(state: State | None) -> dict[str, float | None] | None:
+    """The weather entity's current readings (humidity, wind, ...), for the
+    screens and art that use more than the temperature."""
+    if state is None or state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+        return None
+    return {k: _round(state.attributes.get(k), 1) for k in WEATHER_NOW_ATTRS}
 
 
 def _round(value: Any, digits: int) -> float | None:
@@ -187,11 +202,18 @@ class Feeder:
 
         # Inputs this integration owns but no longer has a source for are
         # cleared, so a screen shows `--` instead of a stale reading.
+        mapped = {name for names in watched.values() for name in names}
         for name in ALL_INPUTS:
             self.values[name] = None
+        for name in mapped:
+            # Mapped but not readable yet: say nothing, keep the box's value.
+            del self.values[name]
         for entity, names in watched.items():
             self._read(entity, names)
-        self.values[IN_SUN] = sun_input(self.hass.states.get(SUN))
+        self._set_known(IN_SUN, sun_input(self.hass.states.get(SUN)))
+        if weather := o.get(OPT_WEATHER):
+            self._set_known(IN_WEATHER_NOW,
+                            weather_now(self.hass.states.get(weather)))
         self.values[IN_LOCATION] = {
             "lat": round(self.hass.config.latitude, 3),
             "lon": round(self.hass.config.longitude, 3),
@@ -220,10 +242,16 @@ class Feeder:
     def _read(self, entity: str, names: list[str]) -> None:
         state = self.hass.states.get(entity)
         for name in names:
-            if name in LOCATION_INPUTS:
-                self.values[name] = state_location(state)
-            else:
-                self.values[name] = state_number(state)
+            self._set_known(name, state_location(state) if name in LOCATION_INPUTS
+                            else state_number(state))
+
+    @callback
+    def _set_known(self, name: str, value: Any) -> None:
+        """Record a value read at start, unless it is not a reading."""
+        if value is not None:
+            self.values[name] = value
+        else:
+            self.values.pop(name, None)
 
     @callback
     def _entity_changed(self, event: Event[EventStateChangedData]) -> None:
@@ -232,16 +260,20 @@ class Feeder:
         for name in self._watched.get(entity, ()):
             value = (state_location(state) if name in LOCATION_INPUTS
                      else state_number(state))
-            self.set(name, value)
+            if value is not None:
+                self.set(name, value)
 
     @callback
     def _weather_changed(self, event: Event[EventStateChangedData]) -> None:
+        if (now := weather_now(event.data["new_state"])) is not None:
+            self.set(IN_WEATHER_NOW, now)
         self.entry.async_create_background_task(
             self.hass, self._refresh_forecast(), f"{DOMAIN} forecast")
 
     @callback
     def _sun_changed(self, event: Event[EventStateChangedData]) -> None:
-        self.set(IN_SUN, sun_input(event.data["new_state"]))
+        if (sun := sun_input(event.data["new_state"])) is not None:
+            self.set(IN_SUN, sun)
 
     async def _hourly(self, now: datetime) -> None:
         for step in (self._refresh_forecast(force=True), self._refresh_history()):

@@ -55,9 +55,15 @@ cleared input shows as `--` on the display.
 | Car 1 / 2 location | Car map | `car_a`, `car_b` (`{"lat", "lon"}`) |
 | Display outlet | Display power switch | (not pushed) |
 
-Always pushed: `sun` (today's rise, noon and set as local hours, and the sun's
-elevation and azimuth now, from `sun.sun`) and `location` (home's latitude and
-longitude, for the sky maths on the box).
+Also pushed: `sun` (today's rise, noon and set as local hours, and the sun's
+elevation and azimuth now, from `sun.sun`), `location` (home's latitude and
+longitude, for the sky maths on the box) and, with a forecast entity set,
+`weather_now` (its humidity, wind speed and bearing, pressure, cloud cover,
+UV index and dew point).
+
+An entity that is unavailable or unknown is treated as no news: the box keeps
+the last good value instead of blanking to `--` whenever Home Assistant
+restarts or a sensor misses a report. Clearing an option clears its input.
 
 ## Entities
 
