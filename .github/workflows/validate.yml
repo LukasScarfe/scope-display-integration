@@ -18,8 +18,10 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # No brand images in home-assistant/brands for a personal integration.
-          ignore: brands
+          # Needed only to list in the HACS default store, not to install as a
+          # custom repository: brand images, and repository metadata (a
+          # license, description and topics) that is the owner's to choose.
+          ignore: brands license description topics
 
   tests:
     runs-on: ubuntu-latest
