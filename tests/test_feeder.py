@@ -150,3 +150,21 @@ async def test_bad_token_starts_reauth(hass, entry, box):
     await hass.async_block_till_done()
     flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
     assert [f["context"]["source"] for f in flows] == ["reauth"]
+
+
+async def test_feeding_waits_for_home_assistant_to_start(hass: HomeAssistant, box):
+    from homeassistant.const import EVENT_HOMEASSISTANT_STARTED
+    from homeassistant.core import CoreState
+
+    hass.set_state(CoreState.starting)
+    hass.states.async_set("sensor.inside", "20")
+    e = MockConfigEntry(domain=DOMAIN, data=DATA,
+                        options={"inside_temp": "sensor.inside"})
+    e.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(e.entry_id)
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert box.pushes == []
+    hass.set_state(CoreState.running)
+    hass.bus.async_fire(EVENT_HOMEASSISTANT_STARTED)
+    await hass.async_block_till_done(wait_background_tasks=True)
+    assert box.pushes[0]["inside_temp"] == 20.0

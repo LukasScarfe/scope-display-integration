@@ -14,8 +14,9 @@ from dataclasses import dataclass
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TOKEN, Platform
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.start import async_at_started
 
 from .api import ScopeClient
 from .const import DOMAIN
@@ -53,9 +54,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ScopeConfigEntry) -> boo
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(feeder.async_stop)
     entry.async_on_unload(entry.add_update_listener(_options_changed))
-    # Reading history can take a while; don't hold up Home Assistant's start.
-    entry.async_create_background_task(
-        hass, feeder.async_start(), f"{DOMAIN} feeder start")
+    # Start feeding once Home Assistant is fully up: during its start the
+    # sources (the weather entity, sensors still restoring) may not exist
+    # yet, and pushing them then would only blank the screens with `--`.
+    # Reading history can take a while, so it runs in the background.
+    @callback
+    def _start(_hass: HomeAssistant) -> None:
+        entry.async_create_background_task(
+            hass, feeder.async_start(), f"{DOMAIN} feeder start")
+
+    entry.async_on_unload(async_at_started(hass, _start))
     return True
 
 
