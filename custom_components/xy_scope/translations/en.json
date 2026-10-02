@@ -1,0 +1,109 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "XY Scope box",
+        "description": "Where the scope box (xy-bench) runs, and the push token from its `.env` (`XYBENCH_TOKEN`).",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "token": "Token"
+        },
+        "data_description": {
+          "host": "The box's IP address or hostname on your network.",
+          "port": "The port its web page is on (8080 by default).",
+          "token": "The value of XYBENCH_TOKEN in the box's .env."
+        }
+      },
+      "reconfigure": {
+        "title": "XY Scope box",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "token": "Token"
+        }
+      },
+      "reauth_confirm": {
+        "title": "New token",
+        "description": "The box refused the token. Enter the current XYBENCH_TOKEN from its .env.",
+        "data": {
+          "token": "Token"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "The box did not answer. Check the host and port, and that it is running.",
+      "invalid_auth": "The box refused the token, or has no XYBENCH_TOKEN set.",
+      "unsupported_version": "The box speaks a different push API version. Update the box or this integration.",
+      "unknown": "Unexpected error; see the log."
+    },
+    "abort": {
+      "already_configured": "This box is already set up.",
+      "reconfigure_successful": "Saved.",
+      "reauth_successful": "Saved."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Screen inputs",
+        "description": "Which entity feeds each screen. Pre-filled with guesses; change or clear any of them. A cleared input shows as -- on the display.",
+        "data": {
+          "inside_temp": "Inside temperature",
+          "outside_temp": "Outside temperature",
+          "high_temp": "Today's high",
+          "low_temp": "Today's low",
+          "weather": "Forecast (hourly)",
+          "plant_a": "Plant 1 soil moisture",
+          "plant_b": "Plant 2 soil moisture",
+          "car_a": "Car 1 location",
+          "car_b": "Car 2 location",
+          "power_switch": "Display outlet"
+        },
+        "data_description": {
+          "weather": "A weather entity with an hourly forecast; its rain chance draws the rain bars.",
+          "plant_a": "Drawn as the solid line on the Plants screen.",
+          "plant_b": "Drawn as the dotted line on the Plants screen.",
+          "car_a": "Anything with latitude and longitude attributes.",
+          "power_switch": "The smart outlet the scope is plugged into. Display power switches this; off must cut the scope's power, since a stopped signal parks the beam on one spot."
+        }
+      }
+    }
+  },
+  "entity": {
+    "select": {
+      "screen": {
+        "name": "Screen"
+      }
+    },
+    "number": {
+      "scale": {
+        "name": "Scale"
+      }
+    },
+    "switch": {
+      "power": {
+        "name": "Display power"
+      }
+    },
+    "sensor": {
+      "current_screen": {
+        "name": "Current screen"
+      },
+      "output": {
+        "name": "Output",
+        "state": {
+          "playing": "Playing",
+          "stopped": "Stopped",
+          "error": "Error"
+        }
+      },
+      "fps": {
+        "name": "Frame rate"
+      },
+      "inputs": {
+        "name": "Inputs"
+      }
+    }
+  }
+}

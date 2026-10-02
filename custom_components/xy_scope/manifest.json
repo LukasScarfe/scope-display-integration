@@ -1,0 +1,14 @@
+{
+  "domain": "xy_scope",
+  "name": "XY Scope Display",
+  "after_dependencies": ["recorder", "weather", "sun"],
+  "codeowners": ["@LukasScarfe"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/LukasScarfe/scope-display-integration",
+  "integration_type": "device",
+  "iot_class": "local_push",
+  "issue_tracker": "https://github.com/LukasScarfe/scope-display-integration/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}
