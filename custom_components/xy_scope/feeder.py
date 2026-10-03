@@ -119,12 +119,15 @@ def sun_input(state: State | None) -> dict[str, float | None] | None:
     }
 
 
-def weather_now(state: State | None) -> dict[str, float | None] | None:
-    """The weather entity's current readings (humidity, wind, ...), for the
-    screens and art that use more than the temperature."""
+def weather_now(state: State | None) -> dict[str, Any] | None:
+    """The weather entity's current condition (its state: `sunny`, `rainy`,
+    `partlycloudy`, ...) and readings (humidity, wind, ...), for the screens
+    and art that use more than the temperature."""
     if state is None or state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
         return None
-    return {k: _round(state.attributes.get(k), 1) for k in WEATHER_NOW_ATTRS}
+    now: dict[str, Any] = {"condition": state.state}
+    now.update({k: _round(state.attributes.get(k), 1) for k in WEATHER_NOW_ATTRS})
+    return now
 
 
 def _round(value: Any, digits: int) -> float | None:

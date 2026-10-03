@@ -97,6 +97,7 @@ async def test_weather_now(hass, entry, box):
     await hass.async_block_till_done(wait_background_tasks=True)
     assert box.inputs["weather_now"]["humidity"] == 93
     assert box.inputs["weather_now"]["wind_speed"] == 12.3
+    assert box.inputs["weather_now"]["condition"] == "rainy"
 
 
 async def test_restarted_box_is_refilled(hass, entry, box):

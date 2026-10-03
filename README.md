@@ -58,8 +58,8 @@ cleared input shows as `--` on the display.
 Also pushed: `sun` (today's rise, noon and set as local hours, and the sun's
 elevation and azimuth now, from `sun.sun`), `location` (home's latitude and
 longitude, for the sky maths on the box) and, with a forecast entity set,
-`weather_now` (its humidity, wind speed and bearing, pressure, cloud cover,
-UV index and dew point).
+`weather_now` (its condition -- `sunny`, `rainy`, ... -- and its humidity,
+wind speed and bearing, pressure, cloud cover, UV index and dew point).
 
 An entity that is unavailable or unknown is treated as no news: the box keeps
 the last good value instead of blanking to `--` whenever Home Assistant
