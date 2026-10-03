@@ -218,8 +218,8 @@ class Feeder:
             self._set_known(IN_WEATHER_NOW,
                             weather_now(self.hass.states.get(weather)))
         self.values[IN_LOCATION] = {
-            "lat": round(self.hass.config.latitude, 3),
-            "lon": round(self.hass.config.longitude, 3),
+            "lat": round(self.hass.config.latitude, 5),
+            "lon": round(self.hass.config.longitude, 5),
         }
         # A source that fails must not stop the rest from being pushed.
         for step in (self._refresh_forecast(force=True), self._refresh_history()):
