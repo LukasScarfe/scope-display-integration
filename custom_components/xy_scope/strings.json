@@ -62,8 +62,8 @@
         },
         "data_description": {
           "weather": "A weather entity with an hourly forecast; its rain chance draws the rain bars.",
-          "plant_a": "Drawn as the solid line on the Plants screen.",
-          "plant_b": "Drawn as the dotted line on the Plants screen.",
+          "plant_a": "Drawn as the line ending in a ring on the Plants screen.",
+          "plant_b": "Drawn as the line ending in a diamond on the Plants screen.",
           "car_a": "Anything with latitude and longitude attributes.",
           "power_switch": "The smart outlet the scope is plugged into. Display power switches this; off must cut the scope's power, since a stopped signal parks the beam on one spot."
         }

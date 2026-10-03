@@ -51,7 +51,7 @@ cleared input shows as `--` on the display.
 | Outside temperature | Home, Weather; Temp week | `outside_temp`, `outside_week` |
 | Today's high / low | Weather | `high_temp`, `low_temp` |
 | Forecast (hourly) | Weather | `forecast_temp`, `forecast_rain` (next 24 h) |
-| Plant 1 / 2 soil moisture | Plants (solid / dotted line) | `plant_a`, `plant_b` (14 days, every 2 h) |
+| Plant 1 / 2 soil moisture | Plants (line ending in a ring / a diamond) | `plant_a`, `plant_b` (14 days, every 2 h) |
 | Car 1 / 2 location | Car map | `car_a`, `car_b` (`{"lat", "lon"}`) |
 | Display outlet | Display power switch | (not pushed) |
 
