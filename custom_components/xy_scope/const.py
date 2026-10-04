@@ -15,6 +15,11 @@ DEFAULT_PORT = 8080
 # returning box gets every input resent.
 STATUS_INTERVAL = timedelta(seconds=60)
 
+# A screen picked by a person (a dashboard, the app, voice) holds this long:
+# automations that pick a screen meanwhile wait, and the newest of their
+# picks goes out when the hold ends.
+MANUAL_HOLD = timedelta(minutes=1)
+
 # An input is pushed at most this often; changes in between are coalesced
 # and the latest value goes out when the window ends.
 THROTTLE_SECONDS = 10.0

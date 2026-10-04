@@ -69,7 +69,7 @@ restarts or a sensor misses a report. Clearing an option clears its input.
 
 | Entity | What it does |
 |---|---|
-| `select.xy_scope_screen` | The screen shown. Options are the box's own screen names (`home`, `weather`, `welcome`, ...). |
+| `select.xy_scope_screen` | The screen shown. Options are the box's own screen names (`home`, `weather`, `welcome`, ...). A screen picked by a person (dashboard, app, voice) holds for a minute: automations that pick a screen meanwhile wait, and the newest of their picks goes out when the minute is up. The `held_until` attribute shows when a hold ends. |
 | `number.xy_scope_scale` | Picture size, 0.05 up to the maximum calibrated on the box. |
 | `switch.xy_scope_display_power` | The scope's outlet. Off really cuts power: a stopped signal would park the beam on one spot and burn the phosphor. Only created when an outlet is set in the options. |
 | `sensor.xy_scope_current_screen` | The screen shown, as text. |
