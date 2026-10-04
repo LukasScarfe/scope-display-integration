@@ -4,8 +4,9 @@ The box (xy-bench) draws screens -- a clock with temperatures, weather as
 curves and bars, plant moisture, a street map -- from named inputs. This
 integration maps entities onto those inputs, keeps them fresh, and exposes the
 display as entities: the screen (select), the scale (number), display power
-(switch, wrapping the scope's outlet) and a few status sensors. Automations
-then only decide which screen shows and when the display is on.
+(switch, wrapping the scope's outlet) and a few status sensors, plus a
+dashboard card with the live trace. Automations then only decide which
+screen shows and when the display is on.
 """
 
 from __future__ import annotations
@@ -15,13 +16,18 @@ from dataclasses import dataclass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TOKEN, Platform
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.start import async_at_started
+from homeassistant.helpers.typing import ConfigType
 
 from .api import ScopeClient
 from .const import DOMAIN
 from .coordinator import ScopeCoordinator
 from .feeder import Feeder
+from .frontend import async_setup_frontend
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 PLATFORMS = [Platform.NUMBER, Platform.SELECT, Platform.SENSOR, Platform.SWITCH]
 
@@ -34,6 +40,11 @@ class ScopeData:
 
 
 type ScopeConfigEntry = ConfigEntry[ScopeData]
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    await async_setup_frontend(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ScopeConfigEntry) -> bool:
