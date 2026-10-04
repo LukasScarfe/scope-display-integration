@@ -16,7 +16,6 @@ The box draws; Home Assistant decides. This integration:
 - **exposes the display** as one device: the current **screen** (select),
   the **scale** (number), **display power** (switch, wrapping the scope's
   smart outlet), and status sensors.
-- **puts the trace on a dashboard** with the XY Scope card.
 
 Automations then only decide which screen shows and when the display is on.
 
@@ -77,26 +76,6 @@ restarts or a sensor misses a report. Clearing an option clears its input.
 | `sensor.xy_scope_output` | `playing`, `stopped` or `error` (the audio feed into the scope). |
 | `sensor.xy_scope_frame_rate` | Frames per second; long screens draw slower, down to the box's floor (50). |
 | `sensor.xy_scope_inputs` | How many inputs the box holds; the `ages` attribute shows each one's age in seconds. |
-
-## Dashboard card
-
-The integration ships a card that draws the scope's live trace: the frame
-the box is playing, the way its own web page previews it, about 8 times a
-second. It is loaded into every dashboard automatically: *Add card* →
-**XY Scope**, or in YAML:
-
-```yaml
-type: custom:xy-scope-card
-entity: select.xy_scope_screen   # optional with a single display
-fps: 8                           # optional, 1-15
-```
-
-Tap it to change the screen. The browser only talks to Home Assistant, which
-fetches each frame from the box (`GET /api/xy_scope/frame`, behind Home
-Assistant's login), so the card works away from home too. It polls only
-while it is on screen. Each poll makes the box plan one extra frame, and
-remote viewing costs about 15 KB per frame, so lower `fps` for a tablet that
-stays on all day.
 
 ## Automations
 

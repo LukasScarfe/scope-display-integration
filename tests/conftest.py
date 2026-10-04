@@ -32,8 +32,7 @@ class FakeBox:
             "api": self.api, "boot": self.boot, "uptime": 1,
             "screen": self.screen,
             "screens": [{"name": n, "label": n.title()} for n in SCREENS],
-            "scale": self.scale, "max_scale": 0.63, "aspect": 1.25,
-            "playing": True,
+            "scale": self.scale, "max_scale": 0.63, "playing": True,
             "error": None, "fps": 50.0,
             "inputs": {k: 0.0 for k in self.inputs},
         }
@@ -70,11 +69,6 @@ class FakeBox:
         if scale is not None:
             self.scale = min(scale, 0.63)
         return self.status_dict()
-
-    async def frame(self) -> dict[str, Any]:
-        self._check(False)
-        return {"pts": [0.0, 0.0, 0.5, 0.5], "jumps": [], "figure": self.screen,
-                "playing": True, "fps": 50.0}
 
     async def check_token(self) -> None:
         await self.put_inputs({})

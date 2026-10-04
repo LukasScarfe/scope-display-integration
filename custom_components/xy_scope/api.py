@@ -1,9 +1,8 @@
 """A small client for the scope box's push API.
 
-The box (xy-bench) draws; Home Assistant feeds it. Four calls:
+The box (xy-bench) draws; Home Assistant feeds it. Three calls:
 
     GET /api/status    version, boot id, screen, screens, scale, fps, inputs
-    GET /api/frame     the frame playing now, as the box's own preview draws it
     PUT /api/inputs    merge named inputs; null removes one
     PUT /api/screen    {"screen": name, "scale": 0..1}, either optional
 
@@ -61,12 +60,6 @@ class ScopeClient:
                 f"this integration speaks {API_VERSION}"
             )
         return status
-
-    async def frame(self) -> dict[str, Any]:
-        """The frame playing now: `pts` as flat x, y pairs (scale applied,
-        oriented as the tube shows them), `jumps` the indices of retrace
-        samples, plus `figure`, `playing` and `fps`."""
-        return await self._request("GET", "/api/frame")
 
     async def put_inputs(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """Merge inputs on the box (None removes one); returns the status."""
