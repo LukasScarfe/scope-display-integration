@@ -21,6 +21,7 @@ OPTIONS = {
     "outside_temp": "weather.home",
     "weather": "weather.home",
     "car_a": "sensor.car",
+    "birthdays": "sensor.birthdays",
     "power_switch": "light.outlet",
 }
 
@@ -32,6 +33,7 @@ async def entry(hass: HomeAssistant, box):
     hass.states.async_set("weather.home", "rainy", {"temperature": 9.0})
     hass.states.async_set("sensor.car", "x", {"latitude": 49.25, "longitude": -123.1})
     hass.states.async_set("light.outlet", "on")
+    hass.states.async_set("sensor.birthdays", "1", {"titles": ["Kat’s birthday "]})
 
     async def forecasts(call) -> ServiceResponse:
         entities = call.data["entity_id"]
@@ -62,6 +64,16 @@ async def test_initial_push_has_every_input(hass, entry, box):
     # Owned but unmapped inputs are cleared on the box.
     assert "high_temp" in first and first["high_temp"] is None
     assert "high_temp" not in box.inputs
+
+
+async def test_birthday_titles(hass, entry, box):
+    assert box.inputs["birthdays"] == ["Kat’s birthday"]
+    hass.states.async_set("sensor.birthdays", "0", {"titles": []})
+    async_fire_time_changed(
+        hass, dt_util.utcnow() + timedelta(seconds=THROTTLE_SECONDS + 1))
+    await hass.async_block_till_done()
+    # None today is a reading (no screens), not missing news.
+    assert box.inputs["birthdays"] == []
 
 
 async def test_changes_are_throttled_and_coalesced(hass, entry, box):

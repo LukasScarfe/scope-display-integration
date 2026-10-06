@@ -58,6 +58,7 @@
           "plant_b": "Plant 2 soil moisture",
           "car_a": "Car 1 location",
           "car_b": "Car 2 location",
+          "birthdays": "Birthdays today",
           "power_switch": "Display outlet"
         },
         "data_description": {
@@ -65,6 +66,7 @@
           "plant_a": "Drawn as the line ending in a ring on the Plants screen.",
           "plant_b": "Drawn as the line ending in a diamond on the Plants screen.",
           "car_a": "Anything with latitude and longitude attributes.",
+          "birthdays": "A sensor whose `titles` attribute lists today's birthday event titles; each gets its own Birthday screen.",
           "power_switch": "The smart outlet the scope is plugged into. Display power switches this; off must cut the scope's power, since a stopped signal parks the beam on one spot."
         }
       }

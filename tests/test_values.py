@@ -4,7 +4,12 @@ from datetime import datetime, timedelta, timezone
 
 from homeassistant.core import State
 
-from custom_components.xy_scope.feeder import resample, state_location, state_number
+from custom_components.xy_scope.feeder import (
+    resample,
+    state_location,
+    state_number,
+    state_titles,
+)
 
 T0 = datetime(2026, 10, 1, tzinfo=timezone.utc)
 
@@ -40,3 +45,11 @@ def test_state_location():
                                                   "longitude": 2})) == {
         "lat": 1.5, "lon": 2.0}
     assert state_location(State("sensor.c", "x", {})) is None
+
+
+def test_state_titles():
+    assert state_titles(State("sensor.b", "2", {"titles": [" Tim birthday ", 3, ""]})) == [
+        "Tim birthday"]
+    assert state_titles(State("sensor.b", "0", {"titles": []})) == []
+    assert state_titles(State("sensor.b", "0", {})) is None
+    assert state_titles(State("sensor.b", "unavailable", {"titles": ["x"]})) is None

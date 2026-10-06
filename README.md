@@ -10,7 +10,7 @@ The box draws; Home Assistant decides. This integration:
 
 - **feeds the screens.** You map an entity to each screen input once (inside
   and outside temperature, today's high and low, the hourly forecast, two soil
-  moisture sensors, two car locations). It pushes each one when it changes, at
+  moisture sensors, two car locations, today's birthdays). It pushes each one when it changes, at
   most every 10 seconds, reads recorder history for the history screens, and
   refills a box that restarted or was unreachable.
 - **exposes the display** as one device: the current **screen** (select),
@@ -53,6 +53,7 @@ cleared input shows as `--` on the display.
 | Forecast (hourly) | Weather | `forecast_temp`, `forecast_rain` (next 24 h) |
 | Plant 1 / 2 soil moisture | Plants (line ending in a ring / a diamond) | `plant_a`, `plant_b` (14 days, every 2 h) |
 | Car 1 / 2 location | Car map | `car_a`, `car_b` (`{"lat", "lon"}`) |
+| Birthdays today | Birthday, Birthday 2-4 (one per title) | `birthdays` (the entity's `titles` attribute, a list of strings) |
 | Display outlet | Display power switch | (not pushed) |
 
 Also pushed: `sun` (today's rise, noon and set as local hours, and the sun's

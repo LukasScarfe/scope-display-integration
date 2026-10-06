@@ -25,6 +25,7 @@ from .const import (
     DEFAULT_PORT,
     DOMAIN,
     LOGGER,
+    OPT_BIRTHDAYS,
     OPT_CAR_A,
     OPT_CAR_B,
     OPT_HIGH_TEMP,
@@ -52,6 +53,7 @@ _SELECTORS = {
         domain=["sensor", "device_tracker", "person"])),
     OPT_CAR_B: EntitySelector(EntitySelectorConfig(
         domain=["sensor", "device_tracker", "person"])),
+    OPT_BIRTHDAYS: EntitySelector(EntitySelectorConfig(domain="sensor")),
     OPT_POWER: EntitySelector(EntitySelectorConfig(domain=["switch", "light"])),
 }
 

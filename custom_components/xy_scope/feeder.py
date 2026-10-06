@@ -54,9 +54,11 @@ from .const import (
     IN_WEATHER_NOW,
     LOCATION_INPUTS,
     LOGGER,
+    MAX_TITLES,
     NUMERIC_INPUTS,
     OPT_WEATHER,
     THROTTLE_SECONDS,
+    TITLES_INPUTS,
     WEATHER_NOW_ATTRS,
 )
 from .coordinator import ScopeCoordinator
@@ -92,6 +94,26 @@ def state_location(state: State | None) -> dict[str, float] | None:
     except (KeyError, TypeError, ValueError):
         return None
     return {"lat": round(lat, 5), "lon": round(lon, 5)}
+
+
+def state_titles(state: State | None) -> list[str] | None:
+    """The entity's `titles` attribute as a list of strings (empty when there
+    are none today), or None when it is not a reading."""
+    if state is None or state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN):
+        return None
+    titles = state.attributes.get("titles")
+    if not isinstance(titles, (list, tuple)):
+        return None
+    return [t.strip() for t in titles if isinstance(t, str) and t.strip()][:MAX_TITLES]
+
+
+def reading(name: str, state: State | None) -> Any:
+    """The input `name` as read from a mapped entity's state."""
+    if name in LOCATION_INPUTS:
+        return state_location(state)
+    if name in TITLES_INPUTS:
+        return state_titles(state)
+    return state_number(state)
 
 
 def local_hours(value: Any) -> float | None:
@@ -188,7 +210,7 @@ class Feeder:
         """Read everything once, push it, then follow changes."""
         o = self.options
         watched: dict[str, list[str]] = {}
-        for name in (*NUMERIC_INPUTS, *LOCATION_INPUTS):
+        for name in (*NUMERIC_INPUTS, *LOCATION_INPUTS, *TITLES_INPUTS):
             if entity := o.get(name):
                 watched.setdefault(entity, []).append(name)
         self._watched = watched
@@ -245,8 +267,7 @@ class Feeder:
     def _read(self, entity: str, names: list[str]) -> None:
         state = self.hass.states.get(entity)
         for name in names:
-            self._set_known(name, state_location(state) if name in LOCATION_INPUTS
-                            else state_number(state))
+            self._set_known(name, reading(name, state))
 
     @callback
     def _set_known(self, name: str, value: Any) -> None:
@@ -261,9 +282,7 @@ class Feeder:
         entity = event.data["entity_id"]
         state = event.data["new_state"]
         for name in self._watched.get(entity, ()):
-            value = (state_location(state) if name in LOCATION_INPUTS
-                     else state_number(state))
-            if value is not None:
+            if (value := reading(name, state)) is not None:
                 self.set(name, value)
 
     @callback

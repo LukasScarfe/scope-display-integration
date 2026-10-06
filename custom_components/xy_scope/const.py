@@ -41,11 +41,13 @@ OPT_PLANT_A = "plant_a"
 OPT_PLANT_B = "plant_b"
 OPT_CAR_A = "car_a"
 OPT_CAR_B = "car_b"
+OPT_BIRTHDAYS = "birthdays"
 OPT_POWER = "power_switch"
 
 ENTITY_OPTIONS = (
     OPT_INSIDE_TEMP, OPT_OUTSIDE_TEMP, OPT_HIGH_TEMP, OPT_LOW_TEMP,
-    OPT_WEATHER, OPT_PLANT_A, OPT_PLANT_B, OPT_CAR_A, OPT_CAR_B, OPT_POWER,
+    OPT_WEATHER, OPT_PLANT_A, OPT_PLANT_B, OPT_CAR_A, OPT_CAR_B, OPT_BIRTHDAYS,
+    OPT_POWER,
 )
 
 # Inputs that are a single number, pushed straight from an entity's state.
@@ -53,6 +55,11 @@ NUMERIC_INPUTS = (OPT_INSIDE_TEMP, OPT_OUTSIDE_TEMP, OPT_HIGH_TEMP, OPT_LOW_TEMP
 
 # Location inputs: {"lat": .., "lon": ..} from an entity's attributes.
 LOCATION_INPUTS = (OPT_CAR_A, OPT_CAR_B)
+
+# Text inputs: a list of strings from an entity's `titles` attribute (the
+# birthday screens, one per title).
+TITLES_INPUTS = (OPT_BIRTHDAYS,)
+MAX_TITLES = 8
 
 # Box input names for the derived series.
 IN_FORECAST_TEMP = "forecast_temp"   # next 24 h, hourly
@@ -80,7 +87,7 @@ HISTORY_SERIES = (
 # Every input this integration owns on the box: ones no longer mapped are
 # cleared there, so a screen shows `--` rather than a stale reading.
 ALL_INPUTS = (
-    *NUMERIC_INPUTS, *LOCATION_INPUTS, IN_FORECAST_TEMP, IN_FORECAST_RAIN,
+    *NUMERIC_INPUTS, *LOCATION_INPUTS, *TITLES_INPUTS, IN_FORECAST_TEMP, IN_FORECAST_RAIN,
     *(name for name, *_ in HISTORY_SERIES), IN_SUN, IN_LOCATION,
     IN_WEATHER_NOW,
 )
