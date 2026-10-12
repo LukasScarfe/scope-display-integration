@@ -20,6 +20,20 @@ STATUS_INTERVAL = timedelta(seconds=60)
 # picks goes out when the hold ends.
 MANUAL_HOLD = timedelta(minutes=1)
 
+# The box's music screen, and how its tracks reach a speaker.
+MUSIC_SCREEN = "music"
+# A music pick holds the screen for the rest of the song plus this, so the
+# box (which goes back to the screen from before by itself) finishes first.
+MUSIC_GRACE = timedelta(seconds=3)
+# How long a speaker gets to start playing before the scope starts without it.
+SPEAKER_START_TIMEOUT = 20.0
+# The speaker's reported position settles after it starts; the scope is lined
+# up with it again this long in, if they drifted further apart than
+# REALIGN_TOLERANCE seconds.
+REALIGN_AFTER = 6.0
+REALIGN_TOLERANCE = 0.15
+NO_SPEAKER = "Scope only"
+
 # An input is pushed at most this often; changes in between are coalesced
 # and the latest value goes out when the window ends.
 THROTTLE_SECONDS = 10.0

@@ -142,7 +142,7 @@ async def test_box_back_after_outage_is_refilled(hass, entry, box):
 async def test_entities(hass, entry, box):
     select = hass.states.get("select.xy_scope_screen")
     assert select.state == "clock"
-    assert select.attributes["options"] == ["home", "clock", "weather", "welcome"]
+    assert select.attributes["options"] == ["home", "clock", "weather", "welcome", "music"]
     assert hass.states.get("number.xy_scope_scale").attributes["max"] == 0.63
     assert hass.states.get("sensor.xy_scope_output").state == "playing"
     assert hass.states.get("sensor.xy_scope_frame_rate").state == "50.0"

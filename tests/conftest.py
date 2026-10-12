@@ -10,7 +10,8 @@ import pytest
 from custom_components.xy_scope.api import ScopeAuthError, ScopeConnectionError
 from custom_components.xy_scope.const import API_VERSION
 
-SCREENS = ["home", "clock", "weather", "welcome"]
+SCREENS = ["home", "clock", "weather", "welcome", "music"]
+TRACKS = {"Planets": 197.0, "Blocks": 213.0}
 
 
 class FakeBox:
@@ -23,6 +24,8 @@ class FakeBox:
         self.inputs: dict[str, Any] = {}
         self.pushes: list[dict[str, Any]] = []
         self.screens_set: list[str] = []
+        self.track = "Planets"
+        self.cues: list[tuple[str, float, bool]] = []
         self.down = False
         self.token_ok = True
         self.api = API_VERSION
@@ -35,6 +38,10 @@ class FakeBox:
             "scale": self.scale, "max_scale": 0.63, "playing": True,
             "error": None, "fps": 50.0,
             "inputs": {k: 0.0 for k in self.inputs},
+            "track": self.track,
+            "tracks": [{"name": n, "seconds": s} for n, s in TRACKS.items()],
+            "music": {"track": self.track if self.screen == "music" else None,
+                      "pos": 0.0 if self.screen == "music" else None},
         }
 
     def _check(self, write: bool) -> None:
@@ -61,8 +68,12 @@ class FakeBox:
                 self.inputs[k] = v
         return self.status_dict()
 
-    async def put_screen(self, screen=None, scale=None) -> dict[str, Any]:
+    async def put_screen(self, screen=None, scale=None, track=None, at=None,
+                         once=False) -> dict[str, Any]:
         self._check(True)
+        if track is not None:
+            self.track = track
+            self.cues.append((track, at, once))
         if screen is not None:
             self.screen = screen
             self.screens_set.append(screen)
@@ -74,6 +85,9 @@ class FakeBox:
         await self.put_inputs({})
 
     base = "http://box:8080"
+
+    def track_url(self, track: str) -> str:
+        return f"{self.base}/music/{track}.wav"
 
 
 @pytest.fixture(autouse=True)

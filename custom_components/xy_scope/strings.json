@@ -76,11 +76,20 @@
     "select": {
       "screen": {
         "name": "Screen"
+      },
+      "music": {
+        "name": "Music"
+      },
+      "speaker": {
+        "name": "Music speaker"
       }
     },
     "number": {
       "scale": {
         "name": "Scale"
+      },
+      "speaker_delay": {
+        "name": "Speaker delay"
       }
     },
     "switch": {

@@ -4,7 +4,9 @@ The box (xy-bench) draws; Home Assistant feeds it. Three calls:
 
     GET /api/status    version, boot id, screen, screens, scale, fps, inputs
     PUT /api/inputs    merge named inputs; null removes one
-    PUT /api/screen    {"screen": name, "scale": 0..1}, either optional
+    PUT /api/screen    {"screen": name, "scale": 0..1}, either optional;
+                       {"screen": "music", "track", "at", "once"} plays a
+                       track from `at` s, then back to the screen before
 
 Writes carry the shared token as a bearer token.
 """
@@ -13,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 from typing import Any
+from urllib.parse import quote
 
 import aiohttp
 
@@ -66,15 +69,25 @@ class ScopeClient:
         return await self._request("PUT", "/api/inputs", inputs)
 
     async def put_screen(
-        self, screen: str | None = None, scale: float | None = None
+        self, screen: str | None = None, scale: float | None = None,
+        track: str | None = None, at: float | None = None, once: bool = False,
     ) -> dict[str, Any]:
-        """Change the screen and/or scale; returns the status."""
+        """Change the screen and/or scale, or play a music track; returns the
+        status."""
         body: dict[str, Any] = {}
         if screen is not None:
             body["screen"] = screen
         if scale is not None:
             body["scale"] = scale
+        if track is not None:
+            body["track"] = track
+            body["at"] = round(max(0.0, at or 0.0), 3)
+            body["once"] = once
         return await self._request("PUT", "/api/screen", body)
+
+    def track_url(self, track: str) -> str:
+        """Where a speaker can fetch a track: the same file the box plays."""
+        return f"{self.base}/music/{quote(track)}.wav"
 
     async def check_token(self) -> None:
         """Prove the token works without changing anything: an empty merge."""

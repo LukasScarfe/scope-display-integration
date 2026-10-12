@@ -71,6 +71,9 @@ restarts or a sensor misses a report. Clearing an option clears its input.
 | Entity | What it does |
 |---|---|
 | `select.xy_scope_screen` | The screen shown. Options are the box's own screen names (`home`, `weather`, `welcome`, ...). A screen picked by a person (dashboard, app, voice) holds for a minute: automations that pick a screen meanwhile wait, and the newest of their picks goes out when the minute is up. The `held_until` attribute shows when a hold ends. |
+| `select.xy_scope_music` | Oscilloscope music: the box's tracks. Picking one plays it start to finish on the scope and the music speaker, then the screens carry on (see [Music](#music)). |
+| `select.xy_scope_music_speaker` | The media player the music is heard on, or *Scope only*. |
+| `number.xy_scope_speaker_delay` | Seconds the speaker's sound runs behind what it reports; raise it until the sound lands with the picture. |
 | `number.xy_scope_scale` | Picture size, 0.05 up to the maximum calibrated on the box. |
 | `switch.xy_scope_display_power` | The scope's outlet. Off really cuts power: a stopped signal would park the beam on one spot and burn the phosphor. Only created when an outlet is set in the options. |
 | `sensor.xy_scope_current_screen` | The screen shown, as text. |
@@ -120,6 +123,35 @@ actions:
       entity_id: switch.xy_scope_display_power
 ```
 
+## Music
+
+The box can play oscilloscope music: tracks whose left and right channels
+*are* the picture. Pick a track in `select.xy_scope_music` (or pick `music`
+in the screen select to play the box's current track) and:
+
+1. the music speaker, if one is chosen, plays the same file, fetched from the
+   box;
+2. once the speaker is playing, the scope starts at the speaker's position,
+   less the speaker delay, so picture and sound line up (and again a few
+   seconds in, once the speaker's position has settled);
+3. the screen holds for the rest of the song, whoever picked it: the
+   timetable's picks wait, and the newest goes out when the song ends. The
+   box goes back to the screen from before by itself the moment the track
+   ends, so the scope never sits silent.
+
+A person picking another screen ends the song early and stops the speaker.
+If the speaker cannot start, the song still plays on the scope.
+
+Play a track from an automation or script:
+
+```yaml
+action: select.select_option
+target:
+  entity_id: select.xy_scope_music
+data:
+  option: Jerobeam Fenderson - Planets
+```
+
 ## The box
 
 The box is a small stdlib-only Python server that turns screens into a stereo
@@ -128,10 +160,17 @@ audio stream. Its push API, which this integration speaks (version 1):
 ```
 GET /api/status    {"api": 1, "boot": "<id per process>", "screen": "home",
                     "screens": [{"name", "label"}], "scale", "max_scale",
-                    "playing", "error", "fps", "inputs": {name: age_seconds}}
+                    "playing", "error", "fps", "inputs": {name: age_seconds},
+                    "track", "tracks": [{"name", "seconds"}],
+                    "music": {"track", "pos", "seconds", "playing"}}
 PUT /api/inputs    {"inside_temp": 21.5, "old_input": null}
                    merge; null removes; any name [a-z][a-z0-9_]{0,47}
 PUT /api/screen    {"screen": "home", "scale": 0.6}    either key optional
+PUT /api/screen    {"screen": "music", "track": "Planets", "at": 1.5,
+                    "once": true}     play a track from `at` seconds; with
+                   `once`, back to the screen before when it ends
+GET /music/<track>.wav               the track itself (byte ranges), for a
+                                     speaker to play
 ```
 
 Writes carry `Authorization: Bearer <XYBENCH_TOKEN>`. Series are evenly

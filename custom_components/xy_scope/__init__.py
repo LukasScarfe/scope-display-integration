@@ -11,6 +11,7 @@ then only decide which screen shows and when the display is on.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TOKEN, Platform
@@ -22,6 +23,10 @@ from .api import ScopeClient
 from .const import DOMAIN
 from .coordinator import ScopeCoordinator
 from .feeder import Feeder
+from .music import Music
+
+if TYPE_CHECKING:
+    from .select import ScreenSelect
 
 PLATFORMS = [Platform.NUMBER, Platform.SELECT, Platform.SENSOR, Platform.SWITCH]
 
@@ -31,6 +36,9 @@ class ScopeData:
     client: ScopeClient
     coordinator: ScopeCoordinator
     feeder: Feeder
+    music: Music
+    # The screen select, once added: music picks go through its hold.
+    screen: ScreenSelect | None = None
 
 
 type ScopeConfigEntry = ConfigEntry[ScopeData]
@@ -49,10 +57,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ScopeConfigEntry) -> boo
 
     feeder = Feeder(hass, entry, client, coordinator)
     coordinator.on_reconnect = feeder.resend_all
-    entry.runtime_data = ScopeData(client, coordinator, feeder)
+    entry.runtime_data = ScopeData(
+        client, coordinator, feeder, Music(hass, entry, client, coordinator))
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     entry.async_on_unload(feeder.async_stop)
+    entry.async_on_unload(entry.runtime_data.music.finished)
     entry.async_on_unload(entry.add_update_listener(_options_changed))
     # Start feeding once Home Assistant is fully up: during its start the
     # sources (the weather entity, sensors still restoring) may not exist
