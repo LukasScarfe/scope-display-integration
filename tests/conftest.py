@@ -12,6 +12,8 @@ from custom_components.xy_scope.const import API_VERSION
 
 SCREENS = ["home", "clock", "weather", "welcome", "music"]
 TRACKS = {"Planets": 197.0, "Blocks": 213.0}
+MOODS = ["neutral", "angry", "happy"]
+ANIMATIONS = ["wink_left", "nod"]
 
 
 class FakeBox:
@@ -29,6 +31,7 @@ class FakeBox:
         self.down = False
         self.token_ok = True
         self.api = API_VERSION
+        self.played: list[str] = []
 
     def status_dict(self) -> dict[str, Any]:
         return {
@@ -42,6 +45,9 @@ class FakeBox:
             "tracks": [{"name": n, "seconds": s} for n, s in TRACKS.items()],
             "music": {"track": self.track if self.screen == "music" else None,
                       "pos": 0.0 if self.screen == "music" else None},
+            "moods": MOODS, "mood": self.inputs.get("super_mood", "neutral"),
+            "animations": ANIMATIONS,
+            "animation": self.played[-1] if self.played else None,
         }
 
     def _check(self, write: bool) -> None:
@@ -69,8 +75,10 @@ class FakeBox:
         return self.status_dict()
 
     async def put_screen(self, screen=None, scale=None, track=None, at=None,
-                         once=False) -> dict[str, Any]:
+                         once=False, play=None) -> dict[str, Any]:
         self._check(True)
+        if play is not None:
+            self.played.append(play)
         if track is not None:
             self.track = track
             self.cues.append((track, at, once))

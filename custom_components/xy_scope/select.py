@@ -26,7 +26,8 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     async_add_entities(
-        [ScreenSelect(entry), MusicSelect(entry), SpeakerSelect(entry)])
+        [ScreenSelect(entry), MusicSelect(entry), SpeakerSelect(entry),
+         MoodSelect(entry), AnimationSelect(entry)])
 
 
 class ScreenSelect(ScopeEntity, SelectEntity):
@@ -214,3 +215,55 @@ class SpeakerSelect(ScopeEntity, SelectEntity, RestoreEntity):
         self._music.speaker = (
             None if option == NO_SPEAKER else self._players().get(option))
         self.async_write_ha_state()
+
+
+class MoodSelect(ScopeEntity, SelectEntity):
+    """The Superintendent's mood: what he is, held until changed, with the
+    lids springing from one mood to the next. Options are the box's own, so
+    a mood added there shows up here without an integration update. Sent as
+    the box's `super_mood` input."""
+
+    def __init__(self, entry: ScopeConfigEntry) -> None:
+        super().__init__(entry.runtime_data.coordinator, "mood")
+        self._data = entry.runtime_data
+
+    @property
+    def options(self) -> list[str]:
+        return list(self.coordinator.data.get("moods") or [])
+
+    @property
+    def current_option(self) -> str | None:
+        return self.coordinator.data.get("mood")
+
+    async def async_select_option(self, option: str) -> None:
+        try:
+            status = await self._data.client.put_inputs({"super_mood": option})
+        except ScopeError as err:
+            raise HomeAssistantError(f"Could not set the mood: {err}") from err
+        self.coordinator.push_result(status)
+
+
+class AnimationSelect(ScopeEntity, SelectEntity):
+    """Something the Superintendent does, then stops doing: a wink, a look
+    round. Picking one plays it once over his mood -- picking the same one
+    again plays it again -- queued behind any playing. Its state is the one
+    playing as of the last poll, if any."""
+
+    def __init__(self, entry: ScopeConfigEntry) -> None:
+        super().__init__(entry.runtime_data.coordinator, "animation")
+        self._data = entry.runtime_data
+
+    @property
+    def options(self) -> list[str]:
+        return list(self.coordinator.data.get("animations") or [])
+
+    @property
+    def current_option(self) -> str | None:
+        return self.coordinator.data.get("animation")
+
+    async def async_select_option(self, option: str) -> None:
+        try:
+            status = await self._data.client.put_screen(play=option)
+        except ScopeError as err:
+            raise HomeAssistantError(f"Could not play {option}: {err}") from err
+        self.coordinator.push_result(status)

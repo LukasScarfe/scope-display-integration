@@ -82,6 +82,12 @@
       },
       "speaker": {
         "name": "Music speaker"
+      },
+      "mood": {
+        "name": "Face mood"
+      },
+      "animation": {
+        "name": "Face animation"
       }
     },
     "number": {

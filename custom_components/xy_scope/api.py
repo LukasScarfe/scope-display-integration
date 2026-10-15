@@ -71,9 +71,10 @@ class ScopeClient:
     async def put_screen(
         self, screen: str | None = None, scale: float | None = None,
         track: str | None = None, at: float | None = None, once: bool = False,
+        play: str | None = None,
     ) -> dict[str, Any]:
-        """Change the screen and/or scale, or play a music track; returns the
-        status."""
+        """Change the screen and/or scale, play a music track, or play one of
+        the Superintendent's animations; returns the status."""
         body: dict[str, Any] = {}
         if screen is not None:
             body["screen"] = screen
@@ -83,6 +84,8 @@ class ScopeClient:
             body["track"] = track
             body["at"] = round(max(0.0, at or 0.0), 3)
             body["once"] = once
+        if play is not None:
+            body["play"] = play
         return await self._request("PUT", "/api/screen", body)
 
     def track_url(self, track: str) -> str:
