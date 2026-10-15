@@ -14,6 +14,7 @@ SCREENS = ["home", "clock", "weather", "welcome", "music"]
 TRACKS = {"Planets": 197.0, "Blocks": 213.0}
 MOODS = ["neutral", "angry", "happy"]
 ANIMATIONS = ["wink_left", "nod"]
+INTROS = ["draw", "zoom", "morph", "random"]
 
 
 class FakeBox:
@@ -32,6 +33,8 @@ class FakeBox:
         self.token_ok = True
         self.api = API_VERSION
         self.played: list[str] = []
+        self.intro = "draw"
+        self.outro = False
 
     def status_dict(self) -> dict[str, Any]:
         return {
@@ -48,6 +51,8 @@ class FakeBox:
             "moods": MOODS, "mood": self.inputs.get("super_mood", "neutral"),
             "animations": ANIMATIONS,
             "animation": self.played[-1] if self.played else None,
+            "intro": self.intro, "outro": self.outro,
+            "intros": [{"name": n, "label": n.title()} for n in INTROS],
         }
 
     def _check(self, write: bool) -> None:
@@ -75,8 +80,13 @@ class FakeBox:
         return self.status_dict()
 
     async def put_screen(self, screen=None, scale=None, track=None, at=None,
-                         once=False, play=None) -> dict[str, Any]:
+                         once=False, play=None, intro=None,
+                         outro=None) -> dict[str, Any]:
         self._check(True)
+        if intro is not None:
+            self.intro = intro
+        if outro is not None:
+            self.outro = outro
         if play is not None:
             self.played.append(play)
         if track is not None:

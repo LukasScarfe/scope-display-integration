@@ -27,7 +27,7 @@ async def async_setup_entry(
 ) -> None:
     async_add_entities(
         [ScreenSelect(entry), MusicSelect(entry), SpeakerSelect(entry),
-         MoodSelect(entry), AnimationSelect(entry)])
+         MoodSelect(entry), AnimationSelect(entry), IntroSelect(entry)])
 
 
 class ScreenSelect(ScopeEntity, SelectEntity):
@@ -266,4 +266,39 @@ class AnimationSelect(ScopeEntity, SelectEntity):
             status = await self._data.client.put_screen(play=option)
         except ScopeError as err:
             raise HomeAssistantError(f"Could not play {option}: {err}") from err
+        self.coordinator.push_result(status)
+
+
+class IntroSelect(ScopeEntity, SelectEntity):
+    """How each screen comes in: the box's own transition styles (`draw`,
+    `zoom`, `fade`, `morph`, ... and `random`), so a style added there shows
+    up here without an integration update. Held by the box until changed;
+    an automation can set it before picking a screen to bring that one in
+    its own way."""
+
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, entry: ScopeConfigEntry) -> None:
+        super().__init__(entry.runtime_data.coordinator, "intro")
+        self._data = entry.runtime_data
+
+    @property
+    def available(self) -> bool:
+        # A box from before transitions has none to offer.
+        return super().available and bool(self.coordinator.data.get("intros"))
+
+    @property
+    def options(self) -> list[str]:
+        return [i["name"] for i in self.coordinator.data.get("intros") or []
+                if isinstance(i, dict) and i.get("name")]
+
+    @property
+    def current_option(self) -> str | None:
+        return self.coordinator.data.get("intro")
+
+    async def async_select_option(self, option: str) -> None:
+        try:
+            status = await self._data.client.put_screen(intro=option)
+        except ScopeError as err:
+            raise HomeAssistantError(f"Could not set the transition: {err}") from err
         self.coordinator.push_result(status)

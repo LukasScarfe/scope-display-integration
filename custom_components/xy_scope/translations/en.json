@@ -88,6 +88,9 @@
       },
       "animation": {
         "name": "Face animation"
+      },
+      "intro": {
+        "name": "Screen transition"
       }
     },
     "number": {
@@ -101,6 +104,9 @@
     "switch": {
       "power": {
         "name": "Display power"
+      },
+      "outro": {
+        "name": "Transition exit"
       }
     },
     "sensor": {

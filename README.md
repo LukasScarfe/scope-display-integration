@@ -17,7 +17,10 @@ The box draws; Home Assistant decides. This integration:
   the **scale** (number), **display power** (switch, wrapping the scope's
   smart outlet), the Superintendent's **face mood** (select, held until
   changed) and **face animation** (select: each pick plays once over the
-  mood, then he is back to it), and status sensors.
+  mood, then he is back to it), the **screen transition** (select: how each
+  screen comes in -- draw, zoom, slide, fade, morph and more, or random) and
+  **transition exit** (switch: the old screen first leaves the same way,
+  backwards), and status sensors.
 
 Automations then only decide which screen shows and when the display is on.
 

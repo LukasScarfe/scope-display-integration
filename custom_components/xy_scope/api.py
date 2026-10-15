@@ -6,7 +6,9 @@ The box (xy-bench) draws; Home Assistant feeds it. Three calls:
     PUT /api/inputs    merge named inputs; null removes one
     PUT /api/screen    {"screen": name, "scale": 0..1}, either optional;
                        {"screen": "music", "track", "at", "once"} plays a
-                       track from `at` s, then back to the screen before
+                       track from `at` s, then back to the screen before;
+                       {"intro": style, "outro": bool} how screens come in
+                       and whether the old one leaves the same way first
 
 Writes carry the shared token as a bearer token.
 """
@@ -71,10 +73,12 @@ class ScopeClient:
     async def put_screen(
         self, screen: str | None = None, scale: float | None = None,
         track: str | None = None, at: float | None = None, once: bool = False,
-        play: str | None = None,
+        play: str | None = None, intro: str | None = None,
+        outro: bool | None = None,
     ) -> dict[str, Any]:
-        """Change the screen and/or scale, play a music track, or play one of
-        the Superintendent's animations; returns the status."""
+        """Change the screen and/or scale, play a music track, play one of
+        the Superintendent's animations, or set how screens come in and go
+        away; returns the status."""
         body: dict[str, Any] = {}
         if screen is not None:
             body["screen"] = screen
@@ -86,6 +90,10 @@ class ScopeClient:
             body["once"] = once
         if play is not None:
             body["play"] = play
+        if intro is not None:
+            body["intro"] = intro
+        if outro is not None:
+            body["outro"] = outro
         return await self._request("PUT", "/api/screen", body)
 
     def track_url(self, track: str) -> str:
